@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Копилка</title>
+<meta name="theme-color" content="#f6f2ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Копилка">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f6f2ff; --ink:#241b3a; --muted:#8a82a0; --line:#ebe5f7; --card:#ffffff;
+  --violet:#7c5cff; --pink:#ff5fa2; --gold:#ffb739; --mint:#1fc8a0; --danger:#e5484d;
+  --font: ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--font);color:var(--ink);line-height:1.4;min-height:100vh;
+  background:
+    radial-gradient(520px 320px at 12% -60px, rgba(124,92,255,.22), transparent 70%),
+    radial-gradient(520px 320px at 100% -40px, rgba(255,95,162,.20), transparent 70%),
+    var(--bg);
+  background-attachment:fixed;
+  padding-top:env(safe-area-inset-top)}
+body.noscroll{overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,select{font:inherit;color:inherit}
+main{max-width:560px;margin:0 auto;padding:14px 16px calc(96px + env(safe-area-inset-bottom))}
+h1,h2,h3{margin:0}
+.title{font-size:30px;font-weight:800;letter-spacing:-.5px;margin:6px 2px 2px}
+.sub{color:var(--muted);font-size:15px;margin:0 2px 14px}
+
+/* tabbar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;
+  background:rgba(255,255,255,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+.tabbar .in{display:flex;width:100%;max-width:560px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11px;font-weight:600;color:var(--muted)}
+.tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--violet)}
+
+/* cards */
+.card{background:var(--card);border-radius:24px;padding:16px;box-shadow:0 8px 24px rgba(60,30,120,.07);margin-bottom:14px}
+.quote{background:linear-gradient(120deg,rgba(124,92,255,.10),rgba(255,95,162,.12));box-shadow:none;font-size:15px;color:#4a3d70;display:flex;gap:10px;align-items:flex-start}
+.quote b{font-size:20px;line-height:1}
+
+.hero{--c:#7c5cff;color:#fff;border-radius:30px;padding:18px 16px 18px;margin-bottom:14px;position:relative;overflow:hidden;
+  background:var(--c);background:linear-gradient(150deg,var(--c),color-mix(in srgb,var(--c) 55%,#1a0b3d));
+  box-shadow:0 16px 34px color-mix(in srgb,var(--c) 45%,transparent)}
+.hero::before{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.12)}
+.hero::after{content:"";position:absolute;left:-50px;bottom:-70px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08)}
+.hero>*{position:relative;z-index:1}
+.hero .kind{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;font-weight:700;text-align:center}
+.hero h2{font-size:26px;font-weight:800;text-align:center;margin:4px 0 0}
+.gauge{position:relative;margin:6px auto 0;max-width:330px}
+.gauge svg{display:block;width:100%;height:auto;overflow:visible}
+.gauge .emo{position:absolute;left:0;right:0;bottom:6%;text-align:center;font-size:64px;line-height:1;filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
+.hero .big{text-align:center;margin-top:4px}
+.hero .big .n{font-size:38px;font-weight:800;letter-spacing:-1px}
+.hero .big .of{opacity:.85;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 14px}
+.chip{background:rgba(255,255,255,.2);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700}
+.btn{display:block;width:100%;border-radius:999px;padding:15px 18px;font-weight:800;font-size:17px;text-align:center}
+.btn.light{background:#fff;color:var(--ink);box-shadow:0 8px 18px rgba(0,0,0,.14)}
+.btn.main{background:linear-gradient(120deg,var(--violet),var(--pink));color:#fff;box-shadow:0 10px 22px rgba(124,92,255,.35)}
+.btn.ghost{background:#f1ecfb;color:var(--violet)}
+.btn.danger{background:#fdecec;color:var(--danger)}
+.btn.small{display:inline-block;width:auto;padding:9px 16px;font-size:14px}
+
+.sums{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.sum{flex:1 1 140px;background:#fff;border-radius:20px;padding:12px 14px;box-shadow:0 6px 18px rgba(60,30,120,.06)}
+.sum small{display:block;color:var(--muted);font-size:12px;font-weight:600}
+.sum b{font-size:19px}
+.sum .s{font-size:12px;color:var(--muted)}
+
+.sechead{display:flex;justify-content:space-between;align-items:center;margin:18px 2px 10px}
+.sechead h3{font-size:19px;font-weight:800}
+.link{color:var(--violet);font-weight:700;font-size:15px}
+
+.goal{display:flex;gap:12px;align-items:center;background:#fff;border-radius:22px;padding:12px;margin-bottom:10px;box-shadow:0 6px 18px rgba(60,30,120,.06);border:2px solid transparent;width:100%;text-align:left}
+.goal.focus{border-color:color-mix(in srgb,var(--c) 55%,transparent)}
+.goal .ic{flex:none;width:50px;height:50px;border-radius:16px;display:grid;place-items:center;font-size:26px;background:color-mix(in srgb,var(--c) 18%,#fff);position:relative}
+.goal .ic i{position:absolute;left:-5px;top:-5px;background:var(--c);color:#fff;font-style:normal;font-size:11px;font-weight:800;border-radius:999px;min-width:19px;height:19px;display:grid;place-items:center;border:2px solid #fff}
+.goal .mid{flex:1;min-width:0}
+.goal .nm{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.goal .meta{font-size:13px;color:var(--muted)}
+.bar{height:8px;border-radius:99px;background:#eee9f8;margin:7px 0 4px;overflow:hidden}
+.bar>div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 60%,#fff));transition:width .6s}
+.goal .edit{flex:none;width:36px;height:36px;border-radius:12px;background:#f4f0fc;display:grid;place-items:center;color:var(--muted)}
+.goal .edit svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.badge{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;background:var(--c);color:#fff;margin-left:6px;vertical-align:2px}
+.badge.done{background:var(--mint)}
+
+.empty{text-align:center;padding:30px 10px}
+.empty .big{font-size:64px}
+.empty h2{font-size:22px;margin:8px 0}
+.empty p{color:var(--muted);margin:0 0 16px}
+.stack{display:grid;gap:10px}
+
+/* calendar */
+.calhead{display:flex;justify-content:space-between;align-items:center;margin:4px 0 10px}
+.calhead .m{font-size:22px;font-weight:800;text-transform:capitalize}
+.nav{width:40px;height:40px;border-radius:14px;background:#fff;display:grid;place-items:center;box-shadow:0 4px 12px rgba(60,30,120,.07);color:var(--violet)}
+.nav svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.dow,.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.dow{margin-bottom:5px;text-align:center;font-size:12px;font-weight:700;color:var(--muted)}
+.day{aspect-ratio:1/1.12;border-radius:14px;background:#fff;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;font-size:13px;font-weight:700;box-shadow:0 3px 8px rgba(60,30,120,.05);position:relative;min-width:0}
+.day.out{background:transparent;box-shadow:none;color:#bdb6d0}
+.day.today{outline:2px solid var(--violet)}
+.day.sel{background:linear-gradient(160deg,var(--violet),var(--pink));color:#fff}
+.day .a{font-size:10px;font-weight:800;color:var(--mint);margin-top:1px;white-space:nowrap}
+.day .a.neg{color:var(--danger)}
+.day.sel .a{color:#fff}
+.day .dots{display:flex;gap:2px;margin-top:auto;padding-bottom:2px}
+.day .dots i{width:5px;height:5px;border-radius:50%;background:var(--c)}
+.day.sel .dots i{box-shadow:0 0 0 1px #fff}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:color-mix(in srgb,var(--c) 18%,#fff);flex:none}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;font-size:15px}
+.row .t small{color:var(--muted)}
+.row .amt{font-weight:800}
+.row .amt.pos{color:var(--mint)} .row .amt.neg{color:var(--danger)}
+.row .del{width:32px;height:32px;border-radius:10px;color:var(--muted);display:grid;place-items:center}
+.row .del svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+
+/* seg */
+.seg{display:flex;background:#efeaf9;border-radius:16px;padding:4px;gap:4px}
+.seg button{flex:1;padding:9px 6px;border-radius:12px;font-weight:700;font-size:14px;color:var(--muted)}
+.seg button.on{background:#fff;color:var(--violet);box-shadow:0 3px 8px rgba(60,30,120,.10)}
+.gchips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.gchips::-webkit-scrollbar{display:none}
+.gchip{flex:none;padding:8px 14px;border-radius:999px;background:#fff;font-weight:700;font-size:14px;box-shadow:0 3px 8px rgba(60,30,120,.06);border:2px solid transparent;white-space:nowrap}
+.gchip.on{border-color:var(--c);color:var(--c)}
+
+/* stats */
+.stat{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-top:1px solid var(--line)}
+.stat:first-child{border-top:0}
+.stat span{color:var(--muted)}
+.stat b{font-size:17px}
+.note{border-radius:18px;padding:12px 14px;font-size:15px;background:#f1ecfb;color:#4a3d70}
+.note.good{background:#e3f8f1;color:#0f7a60}
+.note.warn{background:#fff3df;color:#8a5a00}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--font);font-size:10px;fill:#8a82a0}
+
+/* report */
+.bars{display:flex;align-items:flex-end;gap:3px;height:130px;margin-top:8px}
+.bars div{flex:1;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--violet),var(--pink));min-height:2px}
+.bars div.z{background:#eee9f8}
+.barlbl{display:flex;gap:3px;font-size:10px;color:var(--muted);margin-top:4px}
+.barlbl span{flex:1;text-align:center;overflow:visible;white-space:nowrap}
+.big2{font-size:34px;font-weight:800;letter-spacing:-1px}
+
+/* sheet */
+#sheetwrap{position:fixed;inset:0;z-index:50;display:none}
+#sheetwrap.on{display:block}
+.backdrop{position:absolute;inset:0;background:rgba(36,27,58,.45)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:#fff;border-radius:30px 30px 0 0;padding:18px 18px calc(22px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet h3{font-size:22px;font-weight:800;margin:2px 0 14px;text-align:center}
+.grab{width:42px;height:5px;border-radius:9px;background:#ddd6ee;margin:-6px auto 12px}
+label.f{display:block;font-size:13px;font-weight:700;color:var(--muted);margin:14px 2px 6px}
+.in,.sel{width:100%;border:2px solid var(--line);border-radius:16px;padding:13px 14px;font-size:17px;background:#faf8ff;outline:0;appearance:none;-webkit-appearance:none}
+.in:focus,.sel:focus{border-color:var(--violet);background:#fff}
+.amtwrap{position:relative}
+.amtwrap .in{font-size:28px;font-weight:800;padding-right:70px}
+.amtwrap .cur{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--muted)}
+.emo-grid,.col-grid{display:flex;flex-wrap:wrap;gap:8px}
+.emo-grid button{width:44px;height:44px;border-radius:14px;background:#f4f0fc;font-size:22px;border:2px solid transparent}
+.emo-grid button.on{border-color:var(--violet);background:#fff}
+.col-grid button{width:36px;height:36px;border-radius:50%;background:var(--c);border:3px solid #fff;box-shadow:0 0 0 2px transparent}
+.col-grid button.on{box-shadow:0 0 0 3px var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mt{margin-top:16px}
+textarea.in{min-height:96px;font-size:14px;font-family:ui-monospace,Menlo,monospace;resize:vertical}
+
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:70;background:var(--ink);color:#fff;padding:12px 18px;border-radius:999px;font-weight:700;font-size:15px;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+#confetti{position:fixed;inset:0;z-index:60;pointer-events:none}
+.celeb{position:fixed;inset:0;z-index:65;display:none;place-items:center;background:rgba(36,27,58,.45)}
+.celeb.on{display:grid}
+.celeb .box{background:#fff;border-radius:30px;padding:26px 22px;text-align:center;max-width:320px;margin:20px;animation:up .3s}
+.celeb .e{font-size:64px}
+.celeb h3{font-size:24px;margin:6px 0 6px}
+.celeb p{color:var(--muted);margin:0 0 16px}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav class="tabbar"><div class="in" id="tabs"></div></nav>
+<div id="sheetwrap"></div>
+<div class="celeb" id="celeb"></div>
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(function(){
+'use strict';
+const KEY = 'kopilka_v1';
+const COLORS = ['#7c5cff','#ff5fa2','#ff8a3d','#f5b638','#1fc8a0','#3aa6ff','#a3243b','#4f5d75'];
+const EMOJIS = ['🐷','📱','✈️','🏠','🚗','💍','🎓','💄','🩺','🪪','🗼','🤝','🌴','💻','👗','🎁'];
+const MONTHS = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+const MON_S = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+const QUOTES = [
+ 'Маленький шаг сегодня — большая свобода завтра.',
+ 'Каждый отложенный дирхам приближает тебя к цели.',
+ 'Ты уже на пути. Просто продолжай.',
+ 'Спокойствие — это когда долги закрыты, а мечты стали ближе.',
+ 'Деньги любят ритм. Даже небольшая сумма каждый день делает своё дело.',
+ 'Ты умеешь добиваться своего. Копилка — тому доказательство.',
+ 'Не нужно торопиться. Нужно не останавливаться.',
+ 'Твои цели — это обещания самой себе. Выполняй их красиво.',
+ 'Сегодня ты чуть ближе, чем вчера.',
+ 'Финансовая лёгкость строится из маленьких решений.',
+ 'Ты заслуживаешь жизни без долгов и тревог.',
+ 'Сначала цель, потом лёгкость. Ты справляешься.',
+ 'Один дирхам — это тоже шаг. Двигайся.',
+ 'Мечты исполняются у тех, кто считает и действует.',
+ 'Ты красиво управляешь своими деньгами.',
+ 'Представь, как будет здорово, когда цель закроется. Это уже скоро.',
+ 'Дисциплина сегодня — свобода завтра.',
+ 'Береги своё спокойствие и свои деньги.',
+ 'Ты не отстаёшь. Ты в пути.',
+ 'Копить — это любить своё будущее.'
+];
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const parse = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+const validDate = s => { const d = parse(s); return !!d && ymd(d) === s; };
+const dayNum = d => Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+const todayStr = () => ymd(new Date());
+const round2 = n => Math.round(n * 100) / 100;
+const plural = (n, a, b, c) => { n = Math.abs(n) % 100; const k = n % 10; return (n > 10 && n < 20) ? c : k === 1 ? a : (k >= 2 && k <= 4) ? b : c; };
+const dshort = s => { const d = parse(s); return d ? d.getDate() + ' ' + MON_S[d.getMonth()] : ''; };
+function money(n, cur) {
+  const v = round2(n);
+  const s = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2, minimumFractionDigits: Number.isInteger(v) ? 0 : 2 }).format(v);
+  return s + (cur === 'RUB' ? ' ₽' : ' AED');
+}
+function compact(n, cur) {
+  const a = Math.abs(n); let s;
+  if (a >= 10000) s = Math.round(a / 1000) + 'к';
+  else if (a >= 1000) s = (a / 1000).toFixed(1).replace('.0', '').replace('.', ',') + 'к';
+  else s = String(Math.round(a));
+  return (n < 0 ? '−' : '+') + s + (cur === 'RUB' ? '₽' : '');
+}
+
+// ---------- данные ----------
+let storageOk = true, mem = null;
+function sanGoal(g) {
+  if (!g || typeof g !== 'object') return null;
+  const target = +g.target;
+  if (!(target > 0)) return null;
+  return {
+    id: String(g.id || uid()),
+    name: String(g.name || 'Цель').slice(0, 60),
+    emoji: String(g.emoji || '🐷').slice(0, 8),
+    color: /^#[0-9a-f]{6}$/i.test(g.color || '') ? g.color : COLORS[0],
+    currency: g.currency === 'RUB' ? 'RUB' : 'AED',
+    type: g.type === 'debt' ? 'debt' : 'goal',
+    target: round2(target),
+    deadline: validDate(g.deadline) ? g.deadline : '',
+    created: validDate(g.created) ? g.created : todayStr()
+  };
+}
+function sanDep(d) {
+  if (!d || typeof d !== 'object') return null;
+  const a = +d.amount;
+  if (!isFinite(a) || a === 0 || !validDate(d.date)) return null;
+  return { id: String(d.id || uid()), goalId: String(d.goalId || ''), amount: round2(a), date: d.date, note: String(d.note || '').slice(0, 80) };
+}
+function norm(d) {
+  d = d && typeof d === 'object' ? d : {};
+  const goals = (Array.isArray(d.goals) ? d.goals : []).map(sanGoal).filter(Boolean);
+  const ids = new Set(goals.map(g => g.id));
+  const deposits = (Array.isArray(d.deposits) ? d.deposits : []).map(sanDep).filter(x => x && ids.has(x.goalId));
+  const mode = d.settings && d.settings.mode === 'free' ? 'free' : 'queue';
+  return { settings: { mode }, goals, deposits };
+}
+function load() {
+  try { const r = localStorage.getItem(KEY); if (r) return norm(JSON.parse(r)); } catch (e) { storageOk = false; }
+  return norm(mem || {});
+}
+let db = load();
+function save() {
+  mem = JSON.parse(JSON.stringify(db));
+  try { localStorage.setItem(KEY, JSON.stringify(db)); storageOk = true; } catch (e) { storageOk = false; }
+}
+
+const saved = g => round2(db.deposits.reduce((s, d) => d.goalId === g.id ? s + d.amount : s, 0));
+const isDone = g => saved(g) >= g.target - 0.005;
+const goalById = id => db.goals.find(g => g.id === id);
+const activeGoal = () => db.goals.find(g => !isDone(g)) || null;
+function daysLeft(g) {
+  if (!g.deadline) return null;
+  const diff = dayNum(parse(g.deadline)) - dayNum(new Date());
+  return diff < 0 ? -1 : diff + 1;
+}
+function streak() {
+  const days = new Set(db.deposits.filter(d => d.amount > 0).map(d => d.date));
+  let d = new Date(); let n = 0;
+  if (!days.has(ymd(d))) d.setDate(d.getDate() - 1);
+  while (days.has(ymd(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+// ---------- состояние интерфейса ----------
+const now0 = new Date();
+let ui = { tab: 'home', focus: null, calMonth: new Date(now0.getFullYear(), now0.getMonth(), 1), calSel: todayStr(),
+  tempoGoal: null, repMode: 'month', repDate: new Date(now0.getFullYear(), now0.getMonth(), 1), repCur: 'AED' };
+
+const ICONS = {
+  home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  cal:'<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/>',
+  gauge:'<path d="M4 18a9 9 0 1 1 16 0"/><path d="M12 14l4-5"/><circle cx="12" cy="14.5" r="1.2"/>',
+  chart:'<path d="M5 20V11M12 20V5M19 20v-7"/>',
+  gear:'<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2.2"/><circle cx="8" cy="17" r="2.2"/>',
+  pen:'<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/><path d="M14 6l3 3"/>',
+  trash:'<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
+  left:'<path d="M15 5l-7 7 7 7"/>', right:'<path d="M9 5l7 7-7 7"/>'
+};
+const svg = (n, cls) => '<svg viewBox="0 0 24 24" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + ICONS[n] + '</svg>';
+const TABS = [['home','Главная','home'],['cal','Календарь','cal'],['tempo','Темп','gauge'],['rep','Отчёт','chart'],['set','Настройки','gear']];
+
+// ---------- общие куски ----------
+function currenciesUsed() { const s = new Set(db.goals.map(g => g.currency)); return s.size ? [...s] : ['AED']; }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
+function quote() {
+  const d = new Date(); const doy = dayNum(d) - dayNum(new Date(d.getFullYear(), 0, 0));
+  return QUOTES[doy % QUOTES.length];
+}
+function gaugeSvg(p) {
+  const len = Math.PI * 130;
+  return '<svg viewBox="0 0 300 165"><path d="M20 150 A130 130 0 0 1 280 150" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="20" stroke-linecap="round"/>' +
+    '<path class="garc" d="M20 150 A130 130 0 0 1 280 150" fill="none" stroke="#fff" stroke-width="20" stroke-linecap="round" stroke-dasharray="' + len + '" stroke-dashoffset="' + (len * (1 - p)) + '" style="transition:stroke-dashoffset .8s"/></svg>';
+}
+function statusChip(g) {
+  if (isDone(g)) return g.type === 'debt' ? 'Долг закрыт' : 'Цель достигнута';
+  const dl = daysLeft(g);
+  if (dl == null) return 'Без срока';
+  if (dl < 0) return 'Срок прошёл';
+  return 'до ' + dshort(g.deadline) + ' · ' + dl + ' ' + plural(dl, 'день', 'дня', 'дней');
+}
+function needPerDay(g) {
+  const rem = Math.max(0, g.target - saved(g)); const dl = daysLeft(g);
+  if (dl == null || rem <= 0) return null;
+  return rem / Math.max(1, dl);
+}
+
+// ---------- Главная ----------
+function viewHome() {
+  if (!db.goals.length) {
+    return '<h1 class="title">Копилка</h1><div class="card empty"><div class="big">🐷</div><h2>Начнём копить</h2><p>Добавь первую цель: название, сумму и срок. Остальное приложение посчитает само.</p>' +
+      '<div class="stack"><button class="btn main" data-act="newgoal">Добавить цель</button><button class="btn ghost" data-act="gosettings">Восстановить из копии</button></div></div>';
+  }
+  const act = activeGoal();
+  let f = goalById(ui.focus);
+  if (!f) f = (db.settings.mode === 'queue' ? act : act) || db.goals[0];
+  const s = saved(f), p = Math.min(1, s / f.target), done = isDone(f);
+  const need = needPerDay(f);
+  let h = '<h1 class="title">Копилка</h1><p class="sub">' + (streak() ? '🔥 ' + streak() + ' ' + plural(streak(), 'день', 'дня', 'дней') + ' подряд' : 'Сегодня отличный день, чтобы начать') + '</p>';
+  h += '<div class="card quote"><b>✨</b><span>' + esc(quote()) + '</span></div>';
+  h += '<div class="hero" style="--c:' + f.color + '"><div class="kind">' + (f.type === 'debt' ? 'Долг' : 'Цель') + (db.settings.mode === 'queue' && act && act.id === f.id ? ' · сейчас в приоритете' : '') + '</div>' +
+    '<h2>' + esc(f.name) + '</h2><div class="gauge">' + gaugeSvg(p) + '<div class="emo">' + esc(f.emoji) + '</div></div>' +
+    '<div class="big"><div class="n">' + esc(money(s, f.currency)) + '</div><div class="of">из ' + esc(money(f.target, f.currency)) + ' · ' + Math.floor(p * 100) + '%</div></div>' +
+    '<div class="chips"><span class="chip">' + esc(statusChip(f)) + '</span>' + (need != null ? '<span class="chip">нужно ' + esc(money(Math.ceil(need), f.currency)) + ' в день</span>' : '') + '</div>' +
+    '<button class="btn light" data-act="add" data-goal="' + esc(f.id) + '">+ Добавить сумму</button></div>';
+
+  // итоги
+  const cs = currenciesUsed();
+  h += '<div class="sums">' + cs.map(c => {
+    const gs = db.goals.filter(g => g.currency === c);
+    const sv = gs.reduce((a, g) => a + saved(g), 0), tg = gs.reduce((a, g) => a + g.target, 0);
+    return '<div class="sum"><small>Всего накоплено</small><b>' + esc(money(sv, c)) + '</b><div class="s">из ' + esc(money(tg, c)) + ' по всем целям</div></div>';
+  }).join('') + '</div>';
+
+  h += '<div class="sechead"><h3>Все цели</h3><button class="link" data-act="newgoal">+ Новая</button></div>';
+  h += db.goals.map((g, i) => {
+    const sv = saved(g), pp = Math.min(100, Math.round(sv / g.target * 100)), d = isDone(g);
+    return '<div style="position:relative"><button class="goal' + (g.id === f.id ? ' focus' : '') + '" style="--c:' + g.color + '" data-act="focus" data-id="' + esc(g.id) + '">' +
+      '<div class="ic">' + esc(g.emoji) + (db.settings.mode === 'queue' ? '<i>' + (i + 1) + '</i>' : '') + '</div>' +
+      '<div class="mid"><div class="nm">' + esc(g.name) + (d ? '<span class="badge done">готово</span>' : (act && act.id === g.id && db.settings.mode === 'queue' ? '<span class="badge">сейчас</span>' : '')) + '</div>' +
+      '<div class="bar"><div style="width:' + pp + '%"></div></div>' +
+      '<div class="meta">' + esc(money(sv, g.currency)) + ' из ' + esc(money(g.target, g.currency)) + (g.deadline ? ' · до ' + dshort(g.deadline) : '') + '</div></div>' +
+      '<span class="edit" data-act="editgoal" data-id="' + esc(g.id) + '" aria-label="Изменить">' + svg('pen') + '</span></button></div>';
+  }).join('');
+  return h;
+}
+
+// ---------- Календарь ----------
+function viewCal() {
+  const m = ui.calMonth, y = m.getFullYear(), mo = m.getMonth();
+  const offset = (new Date(y, mo, 1).getDay() + 6) % 7, days = new Date(y, mo + 1, 0).getDate();
+  const cells = Math.ceil((offset + days) / 7) * 7;
+  const today = todayStr();
+  const byDay = {};
+  db.deposits.forEach(d => { (byDay[d.date] = byDay[d.date] || []).push(d); });
+  const monthTotals = {};
+  db.deposits.forEach(d => { if (d.date.slice(0, 7) === y + '-' + pad(mo + 1)) { const g = goalById(d.goalId); if (g) monthTotals[g.currency] = (monthTotals[g.currency] || 0) + d.amount; } });
+  let h = '<div class="calhead"><button class="nav" data-act="calprev" aria-label="Назад">' + svg('left') + '</button><div class="m">' + MONTHS[mo] + ' ' + y + '</div><button class="nav" data-act="calnext" aria-label="Вперёд">' + svg('right') + '</button></div>';
+  const tot = Object.keys(monthTotals);
+  h += '<div class="card" style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center"><span style="color:var(--muted);font-weight:700">Итого за месяц</span><b style="font-size:20px">' +
+    (tot.length ? tot.map(c => esc(money(monthTotals[c], c))).join(' · ') : '0') + '</b></div>';
+  h += '<div class="dow">' + ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x => '<div>' + x + '</div>').join('') + '</div><div class="cal">';
+  for (let i = 0; i < cells; i++) {
+    const dn = i - offset + 1;
+    if (dn < 1 || dn > days) { h += '<div class="day out"></div>'; continue; }
+    const ds = y + '-' + pad(mo + 1) + '-' + pad(dn), list = byDay[ds] || [];
+    const sums = {}; const gset = [];
+    list.forEach(d => { const g = goalById(d.goalId); if (!g) return; sums[g.currency] = (sums[g.currency] || 0) + d.amount; if (!gset.includes(g)) gset.push(g); });
+    const amts = Object.keys(sums).filter(c => Math.abs(sums[c]) > 0).map(c => '<div class="a' + (sums[c] < 0 ? ' neg' : '') + '">' + esc(compact(sums[c], c)) + '</div>').join('');
+    h += '<button class="day' + (ds === today ? ' today' : '') + (ds === ui.calSel ? ' sel' : '') + '" data-act="calsel" data-date="' + ds + '">' + dn + amts +
+      '<div class="dots">' + gset.slice(0, 4).map(g => '<i style="--c:' + g.color + '"></i>').join('') + '</div></button>';
+  }
+  h += '</div>';
+  const sel = ui.calSel, list = (byDay[sel] || []);
+  h += '<div class="sechead"><h3>' + dshort(sel) + (sel === today ? ' · сегодня' : '') + '</h3><button class="link" data-act="add" data-date="' + sel + '">+ Добавить</button></div><div class="card" style="padding:6px 16px">';
+  if (!list.length) h += '<p style="color:var(--muted);margin:12px 0;text-align:center">В этот день записей нет</p>';
+  list.forEach(d => {
+    const g = goalById(d.goalId); if (!g) return;
+    h += '<div class="row" style="--c:' + g.color + '"><div class="ic">' + esc(g.emoji) + '</div><div class="t"><b>' + esc(g.name) + '</b><small>' + esc(d.note || (d.amount < 0 ? 'Снято' : 'Пополнение')) + '</small></div>' +
+      '<div class="amt ' + (d.amount < 0 ? 'neg' : 'pos') + '">' + (d.amount > 0 ? '+' : '−') + esc(money(Math.abs(d.amount), g.currency)) + '</div>' +
+      '<button class="del" data-act="deldep" data-id="' + esc(d.id) + '" aria-label="Удалить">' + svg('trash') + '</button></div>';
+  });
+  h += '</div>';
+  return h;
+}
+
+// ---------- Темп ----------
+function requiredPerDay(cur) {
+  const gs = db.goals.filter(g => g.currency === cur && g.deadline && !isDone(g)).sort((a, b) => a.deadline < b.deadline ? -1 : a.deadline > b.deadline ? 1 : 0);
+  let cum = 0, best = 0;
+  gs.forEach(g => { cum += g.target - saved(g); const dl = daysLeft(g); const d = dl < 0 ? 1 : dl; best = Math.max(best, cum / d); });
+  return gs.length ? best : null;
+}
+function chartSvg(g) {
+  const W = 340, H = 190, L = 8, R = 8, T = 14, B = 28;
+  const deps = db.deposits.filter(d => d.goalId === g.id).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  let startS = g.created; if (deps.length && deps[0].date < startS) startS = deps[0].date;
+  const t0 = dayNum(parse(startS)), tToday = dayNum(new Date());
+  let t1 = g.deadline ? dayNum(parse(g.deadline)) : tToday + 14;
+  const tEnd = Math.max(t1, tToday); if (tEnd <= t0) t1 = t0 + 1;
+  const xMax = Math.max(tEnd, t0 + 1);
+  const cumNow = saved(g);
+  const yMax = Math.max(g.target, cumNow) * 1.05;
+  const X = t => L + (t - t0) / (xMax - t0) * (W - L - R);
+  const Y = v => T + (1 - v / yMax) * (H - T - B);
+  let cum = 0, path = 'M' + X(t0) + ' ' + Y(0);
+  const byD = {}; deps.forEach(d => { byD[d.date] = (byD[d.date] || 0) + d.amount; });
+  Object.keys(byD).sort().forEach(ds => { const t = dayNum(parse(ds)); path += ' L' + X(t) + ' ' + Y(cum); cum += byD[ds]; path += ' L' + X(t) + ' ' + Y(cum); });
+  const tLast = Math.min(tToday, xMax); path += ' L' + X(Math.max(tLast, t0)) + ' ' + Y(cum);
+  const area = path + ' L' + X(Math.max(tLast, t0)) + ' ' + Y(0) + ' Z';
+  let s = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" style="--c:' + g.color + '"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + g.color + '" stop-opacity=".35"/><stop offset="1" stop-color="' + g.color + '" stop-opacity="0"/></linearGradient></defs>';
+  s += '<line x1="' + L + '" y1="' + Y(0) + '" x2="' + (W - R) + '" y2="' + Y(0) + '" stroke="#ebe5f7"/>';
+  s += '<line x1="' + L + '" y1="' + Y(g.target) + '" x2="' + (W - R) + '" y2="' + Y(g.target) + '" stroke="#ebe5f7" stroke-dasharray="3 4"/>';
+  s += '<text x="' + L + '" y="' + (Y(g.target) - 4) + '">цель ' + esc(money(g.target, g.currency)) + '</text>';
+  if (g.deadline) s += '<line x1="' + X(t0) + '" y1="' + Y(0) + '" x2="' + X(dayNum(parse(g.deadline))) + '" y2="' + Y(g.target) + '" stroke="#b9aedd" stroke-width="2" stroke-dasharray="5 5"/>';
+  s += '<path d="' + area + '" fill="url(#ga)"/><path d="' + path + '" fill="none" stroke="' + g.color + '" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>';
+  if (tToday >= t0 && tToday <= xMax) {
+    const xt = X(tToday);
+    s += '<line x1="' + xt + '" y1="' + T + '" x2="' + xt + '" y2="' + Y(0) + '" stroke="' + g.color + '" stroke-opacity=".4" stroke-dasharray="2 3"/><circle cx="' + xt + '" cy="' + Y(cum) + '" r="5" fill="#fff" stroke="' + g.color + '" stroke-width="3"/>';
+  }
+  s += '<text x="' + L + '" y="' + (H - 8) + '">' + dshort(startS) + '</text>';
+  s += '<text x="' + (W - R) + '" y="' + (H - 8) + '" text-anchor="end">' + (g.deadline ? dshort(g.deadline) : dshort(ymd(new Date((xMax) * 86400000 + 43200000)))) + '</text>';
+  return s + '</svg>';
+}
+function viewTempo() {
+  if (!db.goals.length) return '<h1 class="title">Темп</h1><div class="card empty"><div class="big">📈</div><p>Добавь цель, и здесь появится график.</p></div>';
+  let g = goalById(ui.tempoGoal) || activeGoal() || db.goals[0]; ui.tempoGoal = g.id;
+  let h = '<h1 class="title">Темп</h1><p class="sub">Сколько нужно откладывать, чтобы успеть</p>';
+  const cs = currenciesUsed().map(c => [c, requiredPerDay(c)]).filter(x => x[1] != null);
+  if (cs.length) h += '<div class="hero" style="--c:#7c5cff;padding:16px"><div class="kind">Чтобы успеть всё в срок</div><div class="big"><div class="n">' + cs.map(x => esc(money(Math.ceil(x[1]), x[0]))).join(' · ') + '</div><div class="of">нужно откладывать каждый день, считая сегодня</div></div></div>';
+  h += '<div class="gchips">' + db.goals.map(x => '<button class="gchip' + (x.id === g.id ? ' on' : '') + '" style="--c:' + x.color + '" data-act="tgoal" data-id="' + esc(x.id) + '">' + esc(x.emoji) + ' ' + esc(x.name) + '</button>').join('') + '</div>';
+  const s = saved(g), rem = Math.max(0, g.target - s), p = Math.min(100, Math.round(s / g.target * 100)), dl = daysLeft(g), need = needPerDay(g);
+  h += '<div class="card"><h3 style="font-size:19px;margin-bottom:2px">Прогресс: ' + p + '%</h3><div class="bar" style="--c:' + g.color + '"><div style="width:' + p + '%"></div></div>' + chartSvg(g) +
+    '<div style="font-size:12px;color:var(--muted);margin-top:4px">Цветная линия — твои накопления. Пунктир — ровный план к сроку.</div></div>';
+  h += '<div class="card">';
+  h += '<div class="stat"><span>Накоплено</span><b>' + esc(money(s, g.currency)) + '</b></div>';
+  h += '<div class="stat"><span>Осталось накопить</span><b>' + esc(money(rem, g.currency)) + '</b></div>';
+  if (dl != null) h += '<div class="stat"><span>Осталось дней</span><b>' + (dl < 0 ? 'срок прошёл' : dl + ' дн.') + '</b></div>';
+  if (need != null) {
+    h += '<div class="stat"><span>Нужно в день</span><b>' + esc(money(Math.ceil(need), g.currency)) + '</b></div>';
+    h += '<div class="stat"><span>Нужно в неделю</span><b>' + esc(money(Math.ceil(need * 7), g.currency)) + '</b></div>';
+  }
+  h += '</div>';
+  // статус
+  let note = '', cls = '';
+  if (isDone(g)) { note = g.type === 'debt' ? 'Долг закрыт. Ты свободна, это огромная победа.' : 'Цель достигнута! Ты молодец, это только твоя заслуга.'; cls = 'good'; }
+  else if (dl != null && dl < 0) { note = 'Срок прошёл, но цель по-прежнему твоя. Поставь новую дату в настройках цели и продолжай.'; cls = 'warn'; }
+  else if (dl != null) {
+    const total = dayNum(parse(g.deadline)) - dayNum(parse(g.created)); const el = dayNum(new Date()) - dayNum(parse(g.created));
+    const expect = total > 0 ? g.target * Math.min(1, Math.max(0, el / total)) : g.target;
+    if (s >= expect - 0.005) { note = 'Ты в графике, даже чуть впереди. Так держать 💜'; cls = 'good'; }
+    else { note = 'Сейчас чуть позади ровного плана. Это нормально: нужно ' + money(Math.ceil(need), g.currency) + ' в день, и ты догонишь.'; cls = 'warn'; }
+  } else note = 'Срок не задан, поэтому копится без графика. Можно добавить дату в настройках цели.';
+  h += '<div class="note ' + cls + '">' + esc(note) + '</div>';
+  return h;
+}
+
+// ---------- Отчёт ----------
+function viewRep() {
+  const cs = currenciesUsed(); if (!cs.includes(ui.repCur)) ui.repCur = cs[0];
+  const y = ui.repDate.getFullYear(), mo = ui.repDate.getMonth(), isM = ui.repMode === 'month';
+  const inP = d => isM ? d.date.slice(0, 7) === y + '-' + pad(mo + 1) : d.date.slice(0, 4) === String(y);
+  const deps = db.deposits.filter(d => { const g = goalById(d.goalId); return g && g.currency === ui.repCur && inP(d); });
+  const total = round2(deps.reduce((a, d) => a + d.amount, 0));
+  const nb = isM ? new Date(y, mo + 1, 0).getDate() : 12; const buckets = new Array(nb).fill(0);
+  deps.forEach(d => { const dt = parse(d.date); buckets[isM ? dt.getDate() - 1 : dt.getMonth()] += d.amount; });
+  const mx = Math.max(1, ...buckets.map(v => Math.max(0, v)));
+  let h = '<h1 class="title">Отчёт</h1>';
+  h += '<div class="seg"><button class="' + (isM ? 'on' : '') + '" data-act="repmode" data-m="month">Месяц</button><button class="' + (!isM ? 'on' : '') + '" data-act="repmode" data-m="year">Год</button></div>';
+  h += '<div class="calhead mt"><button class="nav" data-act="repprev" aria-label="Назад">' + svg('left') + '</button><div class="m">' + (isM ? MONTHS[mo] + ' ' : '') + y + '</div><button class="nav" data-act="repnext" aria-label="Вперёд">' + svg('right') + '</button></div>';
+  if (cs.length > 1) h += '<div class="seg" style="margin-bottom:12px">' + cs.map(c => '<button class="' + (c === ui.repCur ? 'on' : '') + '" data-act="repcur" data-c="' + c + '">' + (c === 'RUB' ? '₽ Рубли' : 'AED Дирхамы') + '</button>').join('') + '</div>';
+  h += '<div class="card"><div style="color:var(--muted);font-weight:700;font-size:13px">Отложено за период</div><div class="big2">' + esc(money(total, ui.repCur)) + '</div>';
+  if (!deps.length) h += '<p style="color:var(--muted);margin:14px 0 4px">За этот период записей нет. Нажми «+ Добавить сумму» на главной или в календаре.</p>';
+  else {
+    h += '<div class="bars">' + buckets.map(v => '<div class="' + (v > 0 ? '' : 'z') + '" style="height:' + Math.max(2, Math.round(Math.max(0, v) / mx * 100)) + '%"></div>').join('') + '</div>';
+    h += '<div class="barlbl">' + buckets.map((v, i) => '<span>' + (isM ? ((i + 1) % 5 === 0 || i === 0 ? i + 1 : '') : MON_S[i][0].toUpperCase()) + '</span>').join('') + '</div>';
+  }
+  h += '</div>';
+  const per = {}; deps.forEach(d => { per[d.goalId] = (per[d.goalId] || 0) + d.amount; });
+  const ids = Object.keys(per).filter(k => Math.abs(per[k]) > 0);
+  if (ids.length) {
+    h += '<div class="sechead"><h3>По целям</h3></div><div class="card" style="padding:6px 16px">' + ids.map(id => {
+      const g = goalById(id); return '<div class="row" style="--c:' + g.color + '"><div class="ic">' + esc(g.emoji) + '</div><div class="t"><b>' + esc(g.name) + '</b></div><div class="amt ' + (per[id] < 0 ? 'neg' : 'pos') + '">' + esc(money(per[id], g.currency)) + '</div></div>';
+    }).join('') + '</div>';
+  }
+  return h;
+}
+
+// ---------- Настройки ----------
+function viewSet() {
+  let h = '<h1 class="title">Настройки</h1><p class="sub">Режим копилки и копия данных</p>';
+  h += '<div class="card"><h3 style="font-size:18px;margin-bottom:6px">Как пополнять</h3><div class="seg"><button class="' + (db.settings.mode === 'queue' ? 'on' : '') + '" data-act="mode" data-m="queue">По очереди</button><button class="' + (db.settings.mode === 'free' ? 'on' : '') + '" data-act="mode" data-m="free">По отдельности</button></div>' +
+    '<p style="color:var(--muted);font-size:14px;margin:10px 2px 0">' + (db.settings.mode === 'queue'
+      ? 'Деньги идут в первую незакрытую цель. Если сумма больше, остаток сам перейдёт в следующую. Порядок целей меняй кнопками в настройках цели.'
+      : 'Каждый раз ты сама выбираешь, в какую цель положить деньги.') + '</p></div>';
+  h += '<div class="card"><h3 style="font-size:18px;margin-bottom:6px">Копия данных</h3><p style="color:var(--muted);font-size:14px;margin:0 2px 10px">Данные хранятся только на этом телефоне. Сохрани копию, чтобы не потерять их при смене телефона или очистке Safari.</p>' +
+    '<button class="btn ghost" data-act="exportdata">Показать и скопировать данные</button><textarea class="in mt" id="bk" placeholder="Здесь появится копия. Чтобы восстановить, вставь сюда сохранённый текст и нажми кнопку ниже" spellcheck="false"></textarea>' +
+    '<button class="btn main mt" data-act="importdata">Восстановить из текста</button></div>';
+  h += '<div class="card"><button class="btn danger" data-act="wipe">Удалить все данные</button></div>';
+  h += '<p style="text-align:center;color:var(--muted);font-size:13px">' + (storageOk ? 'Сохраняется автоматически' : '⚠️ Телефон не даёт сохранять данные. Открой приложение с экрана «Домой».') + '</p>';
+  return h;
+}
+
+// ---------- render ----------
+function render() {
+  const v = { home: viewHome, cal: viewCal, tempo: viewTempo, rep: viewRep, set: viewSet }[ui.tab]();
+  $('#app').innerHTML = v;
+  $('#tabs').innerHTML = TABS.map(t => '<button class="tab' + (ui.tab === t[0] ? ' on' : '') + '" data-act="tab" data-t="' + t[0] + '">' + svg(t[2]) + t[1] + '</button>').join('');
+}
+
+// ---------- шторка ----------
+function openSheet(html, mount) {
+  const w = $('#sheetwrap'); w.innerHTML = '<div class="backdrop" data-act="closesheet"></div><div class="sheet" role="dialog"><div class="grab"></div>' + html + '</div>'; w.classList.add('on'); document.body.classList.add('noscroll');
+  if (mount) mount(w.querySelector('.sheet'));
+}
+function closeSheet() { const w = $('#sheetwrap'); w.classList.remove('on'); w.innerHTML = ''; document.body.classList.remove('noscroll'); }
+
+function numVal(s) { const v = parseFloat(String(s).replace(/\s/g, '').replace(',', '.')); return isFinite(v) ? v : NaN; }
+
+function sheetAdd(opts) {
+  opts = opts || {};
+  const mode = db.settings.mode;
+  const cs = currenciesUsed();
+  const defGoal = opts.goal && goalById(opts.goal) ? opts.goal : (activeGoal() || db.goals[0] || {}).id;
+  const date = opts.date || todayStr();
+  openSheet('<h3>Добавить сумму</h3><div class="seg"><button class="on" data-k="in">Пополнить</button><button data-k="out">Снять</button></div>' +
+    '<label class="f">Сумма</label><div class="amtwrap"><input class="in" id="a_amt" inputmode="decimal" placeholder="0" autocomplete="off"><span class="cur" id="a_cur">AED</span></div>' +
+    '<div id="a_curbox"></div>' +
+    '<label class="f">В какую цель</label><select class="sel" id="a_goal"></select>' +
+    '<label class="f">Дата</label><input class="in" type="date" id="a_date" value="' + date + '">' +
+    '<label class="f">Заметка (необязательно)</label><input class="in" id="a_note" maxlength="60" placeholder="Например: клиенты за неделю">' +
+    '<button class="btn main mt" id="a_save">Сохранить</button>', sh => {
+    let kind = 'in', pcur = cs[0];
+    const sel = sh.querySelector('#a_goal');
+    function fillGoals() {
+      let o = '';
+      if (mode === 'queue' && kind === 'in') o += '<option value="auto">По очереди (автоматически)</option>';
+      db.goals.forEach(g => { o += '<option value="' + esc(g.id) + '">' + esc(g.emoji + ' ' + g.name + ' · ' + (g.currency === 'RUB' ? '₽' : 'AED')) + '</option>'; });
+      const prev = sel.value; sel.innerHTML = o;
+      if (prev && [...sel.options].some(x => x.value === prev)) sel.value = prev;
+      else sel.value = (mode === 'queue' && kind === 'in') ? 'auto' : defGoal;
+      cur();
+    }
+    function cur() {
+      const box = sh.querySelector('#a_curbox');
+      if (sel.value === 'auto') {
+        if (cs.length > 1) { box.innerHTML = '<label class="f">Валюта суммы</label><div class="seg">' + cs.map(c => '<button data-c="' + c + '" class="' + (c === pcur ? 'on' : '') + '">' + (c === 'RUB' ? '₽ Рубли' : 'AED Дирхамы') + '</button>').join('') + '</div>'; }
+        else box.innerHTML = '';
+        sh.querySelector('#a_cur').textContent = pcur === 'RUB' ? '₽' : 'AED';
+      } else { box.innerHTML = ''; const g = goalById(sel.value); sh.querySelector('#a_cur').textContent = g && g.currency === 'RUB' ? '₽' : 'AED'; }
+    }
+    sh.addEventListener('click', e => {
+      const k = e.target.closest('[data-k]'); const c = e.target.closest('[data-c]');
+      if (k) { kind = k.dataset.k; sh.querySelectorAll('[data-k]').forEach(b => b.classList.toggle('on', b === k)); fillGoals(); }
+      if (c) { pcur = c.dataset.c; cur(); sh.querySelectorAll('[data-c]').forEach(b => b.classList.toggle('on', b === c)); }
+    });
+    sel.addEventListener('change', cur);
+    fillGoals();
+    setTimeout(() => sh.querySelector('#a_amt').focus(), 250);
+    sh.querySelector('#a_save').addEventListener('click', () => {
+      const amt = numVal(sh.querySelector('#a_amt').value); const dt = sh.querySelector('#a_date').value; const note = sh.querySelector('#a_note').value.trim();
+      if (!(amt > 0)) { toast('Введи сумму'); return; }
+      if (!validDate(dt)) { toast('Выбери дату'); return; }
+      const gid = sel.value;
+      if (kind === 'out') {
+        const g = goalById(gid); if (!g) return;
+        if (amt > saved(g) + 0.005) { toast('В этой цели только ' + money(saved(g), g.currency)); return; }
+        addMoney(-amt, dt, gid, note, pcur);
+      } else addMoney(amt, dt, gid, note, pcur);
+      closeSheet();
+    });
+  });
+}
+
+function addMoney(amount, date, goalId, note, curForAuto) {
+  const pct = {}; db.goals.forEach(g => pct[g.id] = saved(g) / g.target * 100);
+  let rows = [];
+  if (goalId === 'auto') {
+    let left = round2(amount);
+    const open = db.goals.filter(g => g.currency === curForAuto && !isDone(g));
+    for (const g of open) { if (left <= 0.004) break; const put = Math.min(round2(g.target - saved(g)), left); if (put > 0) { rows.push({ goalId: g.id, amount: put }); left = round2(left - put); } }
+    if (left > 0.004) {
+      const pool = db.goals.filter(g => g.currency === curForAuto); const last = pool[pool.length - 1];
+      if (!last) { toast('Нет целей в этой валюте'); return; }
+      const ex = rows.find(r => r.goalId === last.id); if (ex) ex.amount = round2(ex.amount + left); else rows.push({ goalId: last.id, amount: left });
+    }
+  } else rows = [{ goalId, amount: round2(amount) }];
+  rows.forEach(r => db.deposits.push({ id: uid(), goalId: r.goalId, amount: r.amount, date, note }));
+  save();
+  // праздники
+  let best = null;
+  rows.forEach(r => {
+    const g = goalById(r.goalId); if (!g || r.amount <= 0) return;
+    const after = saved(g) / g.target * 100;
+    [25, 50, 75, 100].forEach(t => { if (pct[g.id] < t - 0.001 && after >= t - 0.001) { if (!best || t > best.t || (t === best.t && g.id !== best.g.id)) best = { g, t }; } });
+  });
+  ui.focus = rows.length ? rows[0].goalId : ui.focus;
+  if (rows.length > 1) { const nxt = activeGoal(); if (nxt) ui.focus = nxt.id; }
+  render();
+  if (best) celebrate(best.g, best.t);
+  else toast(amount > 0 ? 'Добавлено ✓' : 'Снято ✓');
+}
+
+function celebrate(g, t) {
+  let e = '🎉', title, text;
+  if (t === 100) {
+    if (g.type === 'debt') { e = '🕊️'; title = 'Долг закрыт'; text = '«' + g.name + '» полностью погашен. Ты свободна, это огромная победа.'; }
+    else { title = 'Цель достигнута!'; text = '«' + g.name + '» накоплено полностью. Ты умница!'; }
+  } else if (t === 75) { e = '🚀'; title = 'Осталась четверть'; text = 'Уже 75% по цели «' + g.name + '». Финиш совсем рядом.'; }
+  else if (t === 50) { e = '🌟'; title = 'Половина пути'; text = '50% по цели «' + g.name + '». Ты точно справишься.'; }
+  else { e = '✨'; title = 'Отличное начало'; text = '25% по цели «' + g.name + '». Первый шаг сделан красиво.'; }
+  const c = $('#celeb'); c.innerHTML = '<div class="box"><div class="e">' + e + '</div><h3>' + esc(title) + '</h3><p>' + esc(text) + '</p><button class="btn main" data-act="closecel">Спасибо</button></div>'; c.classList.add('on');
+  confetti(t === 100 ? 160 : 70);
+}
+function confetti(n) {
+  const cv = $('#confetti'), ctx = cv.getContext('2d'); cv.width = innerWidth; cv.height = innerHeight;
+  const cols = ['#7c5cff', '#ff5fa2', '#ffb739', '#1fc8a0', '#3aa6ff', '#ff8a3d'];
+  const ps = Array.from({ length: n }, () => ({ x: Math.random() * cv.width, y: -20 - Math.random() * cv.height * .5, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, s: 6 + Math.random() * 7, r: Math.random() * 6, vr: (Math.random() - .5) * .3, c: cols[(Math.random() * cols.length) | 0] }));
+  const t0 = performance.now();
+  (function f(t) {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ps.forEach(p => { p.x += p.vx; p.y += p.vy; p.r += p.vr; p.vy += .04; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * .6); ctx.restore(); });
+    if (t - t0 < 2800) requestAnimationFrame(f); else ctx.clearRect(0, 0, cv.width, cv.height);
+  })(t0);
+}
+
+function sheetGoal(id) {
+  const g = id ? goalById(id) : null;
+  const st = g ? Object.assign({}, g) : { name: '', emoji: '🐷', color: COLORS[db.goals.length % COLORS.length], currency: 'AED', type: 'goal', target: '', deadline: '' };
+  const hasDeps = g && db.deposits.some(d => d.goalId === g.id);
+  const idx = g ? db.goals.findIndex(x => x.id === g.id) : -1;
+  openSheet('<h3>' + (g ? 'Изменить цель' : 'Новая цель') + '</h3>' +
+    '<div class="seg" id="g_type"><button data-v="goal">Цель</button><button data-v="debt">Долг</button></div>' +
+    '<label class="f">Название</label><input class="in" id="g_name" maxlength="40" placeholder="Например: Поездка" value="' + esc(st.name) + '">' +
+    '<label class="f">Картинка</label><div class="emo-grid" id="g_emo">' + EMOJIS.map(e => '<button data-e="' + e + '">' + e + '</button>').join('') + '</div>' +
+    '<label class="f">Цвет</label><div class="col-grid" id="g_col">' + COLORS.map(c => '<button data-c="' + c + '" style="--c:' + c + '" aria-label="Цвет"></button>').join('') + '</div>' +
+    '<label class="f">Валюта' + (hasDeps ? ' (нельзя менять, есть записи)' : '') + '</label><div class="seg" id="g_cur"><button data-v="AED">AED Дирхамы</button><button data-v="RUB">₽ Рубли</button></div>' +
+    '<div class="two"><div><label class="f">Сумма цели</label><input class="in" id="g_target" inputmode="decimal" placeholder="0" value="' + esc(st.target) + '"></div>' +
+    '<div><label class="f">Срок</label><input class="in" type="date" id="g_dl" value="' + esc(st.deadline) + '"></div></div>' +
+    (g ? '<div class="two mt"><button class="btn ghost small" id="g_up" style="display:block;width:100%">↑ Приоритет выше</button><button class="btn ghost small" id="g_down" style="display:block;width:100%">↓ Приоритет ниже</button></div>' : '') +
+    '<button class="btn main mt" id="g_save">Сохранить</button>' + (g ? '<button class="btn danger mt" id="g_del">Удалить цель</button>' : ''), sh => {
+    const mark = () => {
+      sh.querySelectorAll('#g_type button').forEach(b => b.classList.toggle('on', b.dataset.v === st.type));
+      sh.querySelectorAll('#g_cur button').forEach(b => b.classList.toggle('on', b.dataset.v === st.currency));
+      sh.querySelectorAll('#g_emo button').forEach(b => b.classList.toggle('on', b.dataset.e === st.emoji));
+      sh.querySelectorAll('#g_col button').forEach(b => b.classList.toggle('on', b.dataset.c === st.color));
+    };
+    mark();
+    sh.addEventListener('click', e => {
+      const t = e.target.closest('#g_type button'), c = e.target.closest('#g_cur button'), em = e.target.closest('#g_emo button'), co = e.target.closest('#g_col button');
+      if (t) st.type = t.dataset.v; if (c && !hasDeps) st.currency = c.dataset.v; if (em) st.emoji = em.dataset.e; if (co) st.color = co.dataset.c; mark();
+    });
+    const mv = d => { const j = idx + d; if (j < 0 || j >= db.goals.length) return; const a = db.goals; [a[idx], a[j]] = [a[j], a[idx]]; save(); closeSheet(); render(); toast('Приоритет изменён'); };
+    if (g) { sh.querySelector('#g_up').onclick = () => mv(-1); sh.querySelector('#g_down').onclick = () => mv(1); }
+    sh.querySelector('#g_save').onclick = () => {
+      const name = sh.querySelector('#g_name').value.trim(), target = numVal(sh.querySelector('#g_target').value), dl = sh.querySelector('#g_dl').value;
+      if (!name) { toast('Напиши название'); return; }
+      if (!(target > 0)) { toast('Введи сумму цели'); return; }
+      const obj = { id: g ? g.id : uid(), name, emoji: st.emoji, color: st.color, currency: st.currency, type: st.type, target: round2(target), deadline: validDate(dl) ? dl : '', created: g ? g.created : todayStr() };
+      if (g) db.goals[idx] = obj; else { db.goals.push(obj); ui.focus = obj.id; }
+      save(); closeSheet(); render(); toast('Сохранено ✓');
+    };
+    if (g) sh.querySelector('#g_del').onclick = () => {
+      if (!confirm('Удалить цель «' + g.name + '» и все её записи?')) return;
+      db.goals.splice(idx, 1); db.deposits = db.deposits.filter(d => d.goalId !== g.id); if (ui.focus === g.id) ui.focus = null; save(); closeSheet(); render();
+    };
+  });
+}
+
+// ---------- события ----------
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]'); if (!a) return;
+  const act = a.dataset.act;
+  switch (act) {
+    case 'tab': ui.tab = a.dataset.t; render(); window.scrollTo(0, 0); break;
+    case 'closesheet': closeSheet(); break;
+    case 'closecel': $('#celeb').classList.remove('on'); break;
+    case 'focus': ui.focus = a.dataset.id; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); break;
+    case 'editgoal': e.stopPropagation(); sheetGoal(a.dataset.id); break;
+    case 'newgoal': sheetGoal(); break;
+    case 'add': if (!db.goals.length) { toast('Сначала добавь цель'); sheetGoal(); break; } sheetAdd({ goal: a.dataset.goal, date: a.dataset.date }); break;
+    case 'gosettings': ui.tab = 'set'; render(); break;
+    case 'calprev': ui.calMonth = new Date(ui.calMonth.getFullYear(), ui.calMonth.getMonth() - 1, 1); render(); break;
+    case 'calnext': ui.calMonth = new Date(ui.calMonth.getFullYear(), ui.calMonth.getMonth() + 1, 1); render(); break;
+    case 'calsel': ui.calSel = a.dataset.date; render(); break;
+    case 'deldep': if (confirm('Удалить эту запись?')) { db.deposits = db.deposits.filter(d => d.id !== a.dataset.id); save(); render(); } break;
+    case 'tgoal': ui.tempoGoal = a.dataset.id; render(); break;
+    case 'repmode': ui.repMode = a.dataset.m; render(); break;
+    case 'repprev': ui.repDate = ui.repMode === 'month' ? new Date(ui.repDate.getFullYear(), ui.repDate.getMonth() - 1, 1) : new Date(ui.repDate.getFullYear() - 1, ui.repDate.getMonth(), 1); render(); break;
+    case 'repnext': ui.repDate = ui.repMode === 'month' ? new Date(ui.repDate.getFullYear(), ui.repDate.getMonth() + 1, 1) : new Date(ui.repDate.getFullYear() + 1, ui.repDate.getMonth(), 1); render(); break;
+    case 'repcur': ui.repCur = a.dataset.c; render(); break;
+    case 'mode': db.settings.mode = a.dataset.m; save(); render(); break;
+    case 'exportdata': {
+      const t = JSON.stringify({ app: 'kopilka', v: 1, settings: db.settings, goals: db.goals, deposits: db.deposits });
+      const ta = $('#bk'); ta.value = t; ta.focus(); ta.select();
+      try { navigator.clipboard.writeText(t).then(() => toast('Скопировано. Вставь в заметки и сохрани')).catch(() => toast('Выдели текст и скопируй')); } catch (x) { toast('Выдели текст и скопируй'); }
+      break;
+    }
+    case 'importdata': {
+      const raw = ($('#bk').value || '').trim(); if (!raw) { toast('Вставь текст копии'); break; }
+      let d; try { d = JSON.parse(raw); } catch (x) { toast('Не получилось прочитать текст'); break; }
+      if (!d || !Array.isArray(d.goals)) { toast('Это не копия «Копилки»'); break; }
+      if (db.goals.length && !confirm('Заменить текущие данные восстановленными?')) break;
+      db = norm(d); save(); ui.focus = null; ui.tab = 'home'; render(); toast('Восстановлено ✓ (целей: ' + db.goals.length + ')'); break;
+    }
+    case 'wipe': if (confirm('Удалить все цели и записи? Это нельзя отменить.')) { db = norm({}); save(); ui.focus = null; ui.tab = 'home'; render(); } break;
+  }
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !$('#sheetwrap').classList.contains('on')) render(); });
+
+render();
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+})();
+</script>
+</body>
+</html>
